@@ -8,7 +8,7 @@ int main(void)
 
 	uint8_t *output = get_output(function, nargs, nlines);
 
-	if (TRUE == get_show_truth_table())
+	if (true == get_show_truth_table())
 	{
 		print_truth_table(output, nargs, nlines);
 	}

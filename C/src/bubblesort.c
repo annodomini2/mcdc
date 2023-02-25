@@ -10,7 +10,7 @@ void bubble_sort(Element *list, uint32_t count)
 	{
 		newn = 0;
 
-		for (index = 1; index < count; i++)
+		for (index = 1; index < count; index++)
 		{
 			if (list[index - 1] > list[index]) 
 			{

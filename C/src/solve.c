@@ -20,7 +20,7 @@ uint8_t *get_output(Function function, uint32_t nargs, uint32_t nlines)
 	return output;
 }
 
-sint32_t find_solution(uint32_t nargs, uint32_t nlines, uint8_t *output)
+int32_t find_solution(uint32_t nargs, uint32_t nlines, uint8_t *output)
 {
 	uint32_t index;
 	uint32_t *pairs = (uint32_t*)malloc(2 * nargs * sizeof(uint32_t));	
@@ -34,7 +34,7 @@ sint32_t find_solution(uint32_t nargs, uint32_t nlines, uint8_t *output)
 		first_pair(pairs + 2 * index, nargs, index);
 	}
 
-	i = 0;
+	index = 0;
 
 	while (index < nargs)
 	{
@@ -98,7 +98,7 @@ uint32_t next_pair_i(uint32_t *pairs, uint32_t nargs, uint32_t nlines, uint32_t 
 		return nargs;
 	}
 
-	if (TRUE == check_jump(*y, nargs, index))
+	if (true == check_jump(*y, nargs, index))
 	{
 		*x = *y + 1U;
 	}
@@ -146,7 +146,7 @@ uint32_t check_equal_output(uint32_t *pairs, uint32_t nargs, uint8_t *output)
 
 		if (output[x] == output[y])
 		{
-			return i;
+			return index;
 		}
 	}
 

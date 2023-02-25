@@ -19,9 +19,9 @@ typedef struct
 	pthread_mutex_t *solution_mux;
 } ThreadArg;
 
-sint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, uint8_t *output);
+uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, uint8_t *output);
 uint32_t check_valid_nthreads(uint32_t available_threads, uint32_t argument_count);
-sint32_t compare_pairs(uint32_t *pairs1, uint32_t *pairs2, uint32_t npairs);
+int compare_pairs(uint32_t *pairs1, uint32_t *pairs2, uint32_t npairs);
 ThreadArg *to_thread_arg (uint32_t nargs, uint32_t nlines, uint8_t *output, uint32_t *start, uint32_t *saved_pairs, uint32_t *saved_ntests, bool *end, pthread_mutex_t *start_mux, pthread_mutex_t *solution_mux);
 void from_thread_arg (ThreadArg *thread_arg, uint32_t *nargs, uint32_t *nlines, uint8_t **output, uint32_t **start, uint32_t **saved_pairs, uint32_t **saved_ntests, bool **end, pthread_mutex_t **start_mux, pthread_mutex_t **solution_mux);
 void *find_solution_thread(void *arg);

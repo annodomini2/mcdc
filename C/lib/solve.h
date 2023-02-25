@@ -15,7 +15,7 @@ typedef enum sol{ False='f', True='t', End='e'} Status;
 
 void decimal_to_binary(uint32_t decimal, uint8_t *binary, uint32_t size);
 uint8_t *get_output(Function function, uint32_t nargs, uint32_t nlines);
-sint32 find_solution (uint32_t nargs, uint32_t nlines, uint8_t *output);
+int32_t find_solution (uint32_t nargs, uint32_t nlines, uint8_t *output);
 void first_pair(uint32_t *pair, uint32_t nargs, uint32_t i);
 uint32_t next_pair(uint32_t *pairs, uint32_t nargs, uint32_t nlines);
 uint32_t next_pair_i(uint32_t *pairs, uint32_t nargs, uint32_t nlines, uint32_t i);

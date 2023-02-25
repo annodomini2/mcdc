@@ -55,7 +55,7 @@ uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, 
 uint32_t check_valid_nthreads(uint32_t available_threads, uint32_t argument_count) 
 {
 	uint32_t index;
-	sint32_t power = (argument_count - 1U);
+	int32_t power = (argument_count - 1U);
 	uint32_t permutation_count = 1U;
 	bool limit_reached = false;
 	uint32_t required_threads;
