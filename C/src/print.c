@@ -1,88 +1,116 @@
 #include "print.h"
 
+void print_dash_line(uint32_t nargs)
+{
+	uint32_t index = 0;
 
-void print_dash_line(unsigned int nargs){
-	int i=0;
-	for(i=0; i<8*(nargs+4); i++)
+	for (index = 0; index < (8 * (nargs + 4)); index++)
+	{
 		putchar('-');
+	}
+
 	putchar('\n');
 	fflush(stdout);
 }
 
 
-void print_truth_table (unsigned char *output, unsigned int nargs, unsigned int nlines){
-	unsigned char *input = (unsigned char *) malloc(nargs*sizeof(unsigned char));
-	unsigned int i, j;
+void print_truth_table(uint8_t  *output, uint32_t nargs, uint32_t nlines)
+{
+	uint8_t *input = (uint8_t *)malloc(nargs * sizeof(uint8_t));
+	uint32_t outer_index;
+	uint32_t inner_index;
 
 	print_dash_line(nargs);
 
 	printf("i\t|\t");
-	for(i=0; i<nargs; i++){
-		printf("%d\t", i);
+	
+	for (outer_index = 0; outer_index < nargs; outer_index++)
+	{
+		printf("%d\t", outer_index);
 	}
+
 	printf("|\to\n");
 
 	print_dash_line(nargs);
 
-	for(i=0; i<nlines; i++){
-		printf("%d\t|\t", i);
-		decimal_to_binary(i, input, nargs);
-		for(j=0; j<nargs; j++){
-			printf("%u\t", input[j]);
+	for (outer_index = 0; outer_index < nlines; outer_index++)
+	{
+		printf("%d\t|\t", outer_index);
+
+		decimal_to_binary(outer_index, input, nargs);
+
+		for (inner_index = 0; inner_index < nargs; inner_index++)
+		{
+			printf("%u\t", input[inner_index]);
 		}
-		printf("|\t%u\n", output[i]);
+
+		printf("|\t%u\n", output[outer_index]);
 	}
 
 	print_dash_line(nargs);
 
-	free((unsigned char *) input);
+	free((uint8_t  *) input);
 	fflush(stdout);
 	return;
 }
 
-
-void print_pairs(unsigned int *pairs, unsigned int nargs){
-	unsigned int i;
+void print_pairs(uint32_t *pairs, uint32_t nargs)
+{
+	uint32_t index;
 
 	printf("Pairs:\n");
-	for(i=0; i<nargs; i++){
-		printf("(%d, %d) \t", pairs[2*i], pairs[2*i+1]);
+
+	for (index = 0; index < nargs; index++)
+	{
+		printf("(%d, %d) \t", pairs[(2 * index)], pairs[((2 * index) + 1)]);
 	}
+
 	printf("\n");
 
 	fflush(stdout);
 	return;
 }
 
-
-void print_tests(unsigned int *tests, unsigned int ntests, unsigned int nargs, unsigned char *output){
-	unsigned char *input = (unsigned char *) malloc(nargs*sizeof(unsigned char));
-	unsigned int i, j, test;
+void print_tests(uint32_t *tests, uint32_t ntests, uint32_t nargs, uint8_t  *output)
+{
+	uint8_t  *input = (uint8_t*)malloc(nargs * sizeof(uint8_t));
+	uint32_t outer_index;
+	uint32_t inner_index;
+	uint32_t test;
 
 	printf("\nSolution: %d tests\n", ntests);
 	print_dash_line(nargs);
 
 	printf("i\t|\t");
-	for(i=0; i<nargs; i++){
-		printf("%d\t", i);
+
+	for (outer_index = 0; outer_index < nargs; outer_index++)
+	{
+		printf("%d\t", outer_index);
 	}
+
 	printf("|\to\n");
 
 	print_dash_line(nargs);
 
-	for(i=0; i<ntests; i++){
-		test = tests[i];
+	for (outer_index = 0; outer_index < ntests; outer_index++)
+	{
+		test = tests[outer_index];
+
 		printf("%d\t|\t", test);
+
 		decimal_to_binary(test, input, nargs);
-		for(j=0; j<nargs; j++){
-			printf("%u\t", input[j]);
+
+		for (inner_index = 0; inner_index < nargs; inner_index++)
+		{
+			printf("%u\t", input[inner_index]);
 		}
+
 		printf("|\t%u\n", output[test]);
 	}
 
 	print_dash_line(nargs);
 
-	free((unsigned char *) input);
+	free((uint8_t*)input);
 
 	fflush(stdout);
 	return;

@@ -1,161 +1,187 @@
 #include "solve.h"
 
-unsigned char *get_output(Function function, unsigned int nargs, unsigned int nlines){
-	unsigned char *output;
-	unsigned char *line;
-	unsigned int i;
+uint8_t *get_output(Function function, uint32_t nargs, uint32_t nlines)
+{
+	uint8_t *output;
+	uint8_t *line;
+	uint32_t index;
 
-	output = (unsigned char *) malloc( nlines*sizeof(unsigned char) );
-	line = (unsigned char *) malloc( nargs*sizeof(unsigned char) );
+	output = (uint8_t*) malloc(nlines * sizeof(uint8_t));
+	line = (uint8_t*)malloc(nargs * sizeof(uint8_t));
 
-	for(i=0; i<nlines; i++){
-		decimal_to_binary(i, line, nargs);
-		output[i] = function(line);
+	for (index = 0; index < nlines; index++)
+	{
+		decimal_to_binary(index, line, nargs);
+		output[index] = function(line);
 	}
 
-	free((unsigned char *) line);
+	free(line);
 
 	return output;
 }
 
-
-int find_solution (unsigned int nargs, unsigned int nlines, unsigned char *output){
-	unsigned int i;
-	unsigned int *pairs = (unsigned int*) malloc(2*nargs*sizeof(unsigned int));	
-	unsigned int *saved_pairs = (unsigned int*) malloc(2*nargs*sizeof(unsigned int));	
-	unsigned int saved_ntests = nargs*2+1;
+sint32_t find_solution(uint32_t nargs, uint32_t nlines, uint8_t *output)
+{
+	uint32_t index;
+	uint32_t *pairs = (uint32_t*)malloc(2 * nargs * sizeof(uint32_t));	
+	uint32_t *saved_pairs = (uint32_t*)malloc(2 * nargs * sizeof(uint32_t));	
+	uint32_t saved_ntests = ((nargs * 2U) + 1U);
 	Status res;
 
 	/* Initializing pairs array */
-	for(i=0; i<nargs; i++){
-		first_pair(pairs+2*i, nargs, i);
+	for (index = 0; index < nargs; index++)
+	{
+		first_pair(pairs + 2 * index, nargs, index);
 	}
 
 	i = 0;
-	while(i < nargs){
-		i = check_invalid_pairs(pairs, nargs, nlines, output);
+
+	while (index < nargs)
+	{
+		index = check_invalid_pairs(pairs, nargs, nlines, output);
 
 		res = check_solution(pairs, nargs, saved_pairs, &saved_ntests);
 
-		if(res != False){
+		if (res != False)
+		{
 			print_tests(saved_pairs, saved_ntests, nargs, output);
 			print_pairs(pairs, nargs);
 		}
-		if(res == End)
+		
+		if (res == End)
 			break;
 
-		i = next_pair(pairs, nargs, nlines);
+		index = next_pair(pairs, nargs, nlines);
 	}
 
-	free((unsigned int *) pairs);
-	free((unsigned int *) saved_pairs);
+	free((uint32_t*)pairs);
+	free((uint32_t*)saved_pairs);
 
 	return 0;	
 }
 
-
-void first_pair(unsigned int *pair, unsigned int nargs, unsigned int i){
-	pair[0] = 0;
-	pair[1] = 1<<(nargs-i-1);
+void first_pair(uint32_t *pair, uint32_t nargs, uint32_t index)
+{
+	pair[0] = 0U;
+	pair[1] = 1U << (nargs - index - 1U);
 
 	return;
 }
 
+uint32_t next_pair(uint32_t *pairs, uint32_t nargs, uint32_t nlines)
+{
+	uint32_t index = nargs - 1U;
+	uint32_t *x = pairs + (2U * (nargs - 1U));
+	uint32_t *y = x + 1U;
 
-unsigned int next_pair(unsigned int *pairs, unsigned int nargs, unsigned int nlines){
-	unsigned int i = nargs-1;
-	unsigned int *x = pairs+2*(nargs-1);
-	unsigned int *y = x+1;
+	*x += 2U;
+	*y += 2U;
 
-	*x += 2;
-	*y += 2;
-
-	if (*x>=nlines){
-		first_pair(x, nargs, nargs-1);
-		return next_pair_i(pairs, nargs, nlines, i-1);
+	if (*x >= nlines)
+	{
+		first_pair(x, nargs, (nargs - 1U));
+		return next_pair_i(pairs, nargs, nlines, (index - 1U));
 	}
-	else{
-		return i;	/* return index of changed pair */
+	else
+	{
+		return index;	/* return index of changed pair */
 	}
 }
 
+uint32_t next_pair_i(uint32_t *pairs, uint32_t nargs, uint32_t nlines, uint32_t index)
+{
+	uint32_t *x = pairs + (2U * index);
+	uint32_t *y = x + 1U;
 
-unsigned int next_pair_i(unsigned int *pairs, unsigned int nargs, unsigned int nlines, unsigned int i){
-	unsigned int *x = pairs+2*i;
-	unsigned int *y = x+1;
-
-	if(i>=nargs)
+	if (index >= nargs)
+	{
 		return nargs;
+	}
 
-	if(check_jump(*y, nargs, i))
-		*x = *y+1;
+	if (TRUE == check_jump(*y, nargs, index))
+	{
+		*x = *y + 1U;
+	}
 	else
-		*x = *x+1;
+	{
+		*x = *x + 1U;
+	}
 	
-	*y = *x | (1<<(nargs-1-i));
+	*y = *x | (1U << (nargs - 1U - index));
 
-	if (*x>=nlines){
-		if (i>0){
-			first_pair(x, nargs, i);
-			return next_pair_i(pairs, nargs, nlines, i-1);
+	if (*x >= nlines)
+	{
+		if (index > 0)
+		{
+			first_pair(x, nargs, index);
+			return next_pair_i(pairs, nargs, nlines, (index - 1U));
 		}
 		else
+		{
 			return nargs;
+		}
 	}
 	else
-		return i;	/* return index of changed pair */
+	{
+		return index;	/* return index of changed pair */
+	}
 }
 
+bool check_jump(uint32_t n, uint32_t nargs, uint32_t index)
+{
+	uint32_t mask = (1U << (nargs - index)) - 1U;
 
-bool check_jump(unsigned int n, unsigned int nargs, unsigned int i){
-	unsigned int mask = (1<<(nargs-i))-1;
-
-	if((mask & n) == mask)
-		return true;
-	else
-		return false;
+	return ((mask & n) == mask);
 }
 
+uint32_t check_equal_output(uint32_t *pairs, uint32_t nargs, uint8_t *output)
+{
+	uint32_t index;
+	uint32_t  x, y;
 
-unsigned int check_equal_output(unsigned int *pairs, unsigned int nargs, unsigned char *output){
-	unsigned int i;
-	unsigned int x, y;
+	for (index = 0U; index < nargs; index++)
+	{
+		x = pairs[(2U * index)];
+		y = pairs[((2U * index) + 1U)];
 
-	for(i=0; i<nargs; i++){
-		x = pairs[2*i];
-		y = pairs[2*i+1];
-
-		if(output[x]==output[y])
+		if (output[x] == output[y])
+		{
 			return i;
+		}
 	}
 
 	return nargs;
 }
 
+uint32_t check_invalid_pairs(uint32_t *pairs, uint32_t nargs, uint32_t nlines, uint8_t *output)
+{
+	uint32_t index = 0U;	/* default points to pair 0, which may mean nothing */
+	uint32_t count;
 
-unsigned int check_invalid_pairs(unsigned int *pairs, unsigned int nargs, unsigned int nlines, unsigned char *output){
-	unsigned int i=0;	/* default points to pair 0, which may mean nothing */
-	unsigned int j;
-
-	while( (j = check_equal_output(pairs, nargs, output)) < nargs ){
+	while ((count = check_equal_output(pairs, nargs, output)) < nargs)
+	{
 		/* printf("Equal output.\n"); */
 		fflush(stdout);
-		i = next_pair_i(pairs, nargs, nlines, j);
+		index = next_pair_i(pairs, nargs, nlines, count);
 	}
 
-	return i;
+	return index;
 }
 
+uint32_t count_unique(uint32_t *pairs, uint32_t nargs)
+{
+	uint32_t outer_index;
+	uint32_t inner_index;
+	uint32_t nentries = nargs * 2U;
+	uint32_t count = nentries;
 
-unsigned int count_unique(unsigned int *pairs, unsigned int nargs){
-	unsigned int i, j;
-	unsigned int nentries = nargs*2;
-	unsigned int count = nentries;
-
-	for(i=0; i<nentries; i++){
-		for(j=i+2; j<nentries; j++){
-			if(pairs[i] == pairs[j]){
-				count -= 1;
+	for (outer_index = 0U; outer_index < nentries; outer_index++)
+	{
+		for(inner_index = (outer_index + 2U); inner_index < nentries; inner_index++)
+		{
+			if (pairs[outer_index] == pairs[inner_index])
+			{
+				count--;
 				break;
 			}
 		}
@@ -164,48 +190,61 @@ unsigned int count_unique(unsigned int *pairs, unsigned int nargs){
 	return count;
 }
 
-
-Status check_solution(unsigned int *pairs, unsigned int nargs, unsigned int *saved_pairs, unsigned int *saved_ntests){
-	unsigned int ntests;
-	unsigned int min_ntests = nargs+1;
+Status check_solution(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pairs, uint32_t *saved_ntests)
+{
+	uint32_t  ntests;
+	uint32_t  min_ntests = (nargs + 1U);
 
 	ntests = count_unique(pairs, nargs);
 
-	if(ntests < *saved_ntests){
+	if (ntests < *saved_ntests)
+	{
 		*saved_ntests = filter_repeated_pairs(pairs, nargs, saved_pairs);
 
 		bubble_sort(saved_pairs, *saved_ntests);
 
-		if( ntests == min_ntests )
+		if (ntests == min_ntests)
+		{
 			return End;
+		}
 		else
+		{
 			return True;
+		}
 	}
 
 	return False;
 }
 
-
-unsigned int filter_repeated_pairs(unsigned int *pairs, unsigned int nargs, unsigned int *saved_pairs){
-	unsigned int i, j, k;
+uint32_t filter_repeated_pairs(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pairs)
+{
+	uint32_t outer_index;
+	uint32_t inner_index;
+	uint32_t result;
 	bool unique;
-	unsigned int nentries = nargs*2;
+	uint32_t nentries = (nargs * 2U);
 
-	k = 0;
-	for(i=0; i<nentries; i++){
+	result = 0U;
+
+	for (outer_index = 0U; outer_index < nentries; outer_index++)
+	{
 		unique = true;
-		for(j=i+2; j<nentries; j++){
-			if(pairs[i] == pairs[j]){
+
+		for (inner_index = (outer_index + 2U); inner_index < nentries; inner_index++)
+		{
+			if (pairs[outer_index] == pairs[inner_index])
+			{
 				unique = false;
 				break;
 			}
 		}
 
-		if(unique){
-			saved_pairs[k] = pairs[i];
-			k++;
+		if (true == unique)
+		{
+			saved_pairs[result] = pairs[outer_index];
+			result++;
 		}
 	}
 
-	return k;
+	return result;
 }

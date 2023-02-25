@@ -1,8 +1,10 @@
 #ifndef BUBBLESORT_H
 #define BUBBLESORT_H
 
-typedef unsigned int Element;
+#include "stdint.h"
 
-void bubble_sort(Element *list, unsigned int n);
+typedef uint32_t Element;
+
+void bubble_sort(Element *list, uint32_t count);
 
 #endif /* BUBBLESORT_H */

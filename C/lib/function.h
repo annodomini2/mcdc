@@ -1,9 +1,11 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-unsigned char function (unsigned char input[]);
-unsigned int get_nthreads(void);
-unsigned char get_show_truth_table(void);
-unsigned int get_nargs(void);
+#include "stdint.h"
+
+uint8_t function (uint8_t input[]);
+uint32_t get_nthreads(void);
+uint8_t get_show_truth_table(void);
+uint32_t get_nargs(void);
 
 #endif /* FUNCTION_H */

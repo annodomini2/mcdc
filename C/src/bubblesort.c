@@ -1,21 +1,26 @@
 #include "bubblesort.h"
 
+void bubble_sort(Element *list, uint32_t count)
+{
+	uint32_t newn;
+	uint32_t index;
+	Element temp_element;
 
-void bubble_sort(Element *list, unsigned int n){
-	unsigned int newn;
-	unsigned int i;
-	Element aux;
-
-	do{
+	do
+	{
 		newn = 0;
-		for(i=1; i<n; i++){
-			if (list[i-1] > list[i]) {
-				aux = list[i-1];
-				list[i-1] = list[i];
-				list[i] = aux;
-				newn = i;
+
+		for (index = 1; index < count; i++)
+		{
+			if (list[index - 1] > list[index]) 
+			{
+				temp_element = list[index - 1];
+				list[index - 1] = list[index];
+				list[index] = temp_element;
+				newn = index;
 			}
 		}
-		n = newn;
-	}while (n > 1);
+
+		count = newn;
+	} while (count > 1);
 }
