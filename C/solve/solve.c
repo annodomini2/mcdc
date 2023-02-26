@@ -1,5 +1,7 @@
 #include "solve.h"
 
+static bool check_jump(uint32_t n, uint32_t nargs, uint32_t index);
+
 uint8_t *get_output(Function function, uint32_t nargs, uint32_t nlines)
 {
 	uint8_t *output;
@@ -127,7 +129,7 @@ uint32_t next_pair_i(uint32_t *pairs, uint32_t nargs, uint32_t nlines, uint32_t 
 	}
 }
 
-bool check_jump(uint32_t n, uint32_t nargs, uint32_t index)
+static bool check_jump(uint32_t n, uint32_t nargs, uint32_t index)
 {
 	uint32_t mask = (1U << (nargs - index)) - 1U;
 
