@@ -1,5 +1,6 @@
 #include "bubblesort.h"
 
+// TODO: Determine if this can be optimised
 void bubble_sort(uint32_t *list, uint32_t count)
 {
 	uint32_t newn;
