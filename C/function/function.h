@@ -3,7 +3,7 @@
 
 #include "stdint.h"
 
-uint8_t function (uint8_t input[]);
+uint8_t function(uint8_t input[]);
 uint32_t get_nthreads(void);
 uint8_t get_show_truth_table(void);
 uint32_t get_nargs(void);

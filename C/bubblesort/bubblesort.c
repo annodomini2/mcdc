@@ -1,10 +1,10 @@
 #include "bubblesort.h"
 
-void bubble_sort(Element *list, uint32_t count)
+void bubble_sort(uint32_t *list, uint32_t count)
 {
 	uint32_t newn;
 	uint32_t index;
-	Element temp_element;
+	uint32_t temp_element;
 
 	do
 	{

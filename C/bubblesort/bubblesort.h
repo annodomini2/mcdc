@@ -3,8 +3,6 @@
 
 #include "stdint.h"
 
-typedef uint32_t Element;
-
-void bubble_sort(Element *list, uint32_t count);
+void bubble_sort(uint32_t *list, uint32_t count);
 
 #endif /* BUBBLESORT_H */

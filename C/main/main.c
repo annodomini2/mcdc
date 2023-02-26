@@ -1,4 +1,9 @@
-#include "mcdc.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "stdint.h"
+
+#include "function.h"
+#include "threads.h"
 
 int main(void)
 {
