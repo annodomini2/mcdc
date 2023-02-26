@@ -7,7 +7,7 @@ static void *find_solution_thread(void *arg);
 static uint32_t get_start_pairs(uint32_t  *pairs, uint32_t  *start, uint32_t  nargs, uint32_t  nlines, pthread_mutex_t *start_mux);
 static Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pairs, uint32_t *saved_ntests, uint8_t *output, pthread_mutex_t *solution_mux);
 static void copy_array(uint32_t *from, uint32_t *to, uint32_t n);
-static bool check_invalid_pairs_thread(uint32_t  *pairs, uint32_t  nargs, uint32_t  nlines, uint8_t  *output, uint32_t  *i);
+static bool check_invalid_pairs_thread(uint32_t *pairs, uint32_t nargs, uint32_t nlines, uint8_t *output, uint32_t *i);
 
 
 uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, uint8_t *output)
@@ -15,7 +15,7 @@ uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, 
 	pthread_t *threads;
 	ThreadArg *thread_arg;
 	uint32_t *start = (uint32_t*)malloc(2 * nargs * sizeof(uint32_t));
-	uint32_t *saved_pairs = (uint32_t*) malloc( 2 * nargs * sizeof(uint32_t));	
+	uint32_t *saved_pairs = (uint32_t*)malloc(2 * nargs * sizeof(uint32_t));	
 	uint32_t saved_ntests = 2 * nargs + 1;
 	uint32_t  index;
 	bool end = false;
@@ -24,7 +24,7 @@ uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, 
 	pthread_mutex_t solution_mux;
 
 	nthreads = determine_required_threads(nthreads, nargs);
-	threads = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
+	threads = (pthread_t*)malloc(nthreads*sizeof(pthread_t));
 
 	pthread_mutex_init(&start_mux, NULL);
 	pthread_mutex_init(&solution_mux, NULL);
@@ -40,7 +40,7 @@ uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, 
 	{
 		thread_arg = to_thread_arg(nargs, nlines, output, start, saved_pairs, &saved_ntests, &end, &start_mux, &solution_mux);
 
-		pthread_create(&(threads[index]), NULL, find_solution_thread, (void *)thread_arg);
+		pthread_create(&(threads[index]), NULL, find_solution_thread, (void*)thread_arg);
 	}
 
 	printf("Created %d threads.\n", nthreads);
@@ -106,7 +106,7 @@ static uint32_t determine_required_threads(uint32_t available_threads, uint32_t 
 // {
 // 	uint32_t index;
 // 	int comparison = 0;	/* pairs1 are smaller than pairs2 */ 
-
+//
 // 	for (index = 0U; index < npairs; index++)
 // 	{
 // 		if (pairs1[index] < pairs2[index])
@@ -124,7 +124,7 @@ static uint32_t determine_required_threads(uint32_t available_threads, uint32_t 
 // 			break;
 // 		}
 // 	}
-
+//
 // 	return comparison;
 // }
 
@@ -173,7 +173,7 @@ static void *find_solution_thread(void *arg)
 	uint32_t  *pairs;
 	uint32_t  *saved_pairs;
 	uint32_t  *saved_ntests;
-	uint32_t  i;
+	uint32_t  index;
 	char res;
 	bool *end;
 	bool invalid;
@@ -182,35 +182,37 @@ static void *find_solution_thread(void *arg)
 
 	from_thread_arg((ThreadArg *)arg, &nargs, &nlines, &output, &start, &saved_pairs, &saved_ntests, &end, &start_mux, &solution_mux);
 
-	pairs = (uint32_t  *) malloc(2*nargs*sizeof(nargs));
+	pairs = (uint32_t*)malloc(2 * nargs * sizeof(nargs));
 
 	while(!(*end))
 	{
-		i = get_start_pairs(pairs, start, nargs, nlines, start_mux);
+		index = get_start_pairs(pairs, start, nargs, nlines, start_mux);
 		
-		if (i == nargs)
+		if (index == nargs)
 		{
 			*end = true;
 		}
 
 		do
 		{
-			invalid = check_invalid_pairs_thread(pairs, nargs, nlines, output, &i);
+			invalid = check_invalid_pairs_thread(pairs, nargs, nlines, output, &index);
 
-			if (invalid && (i <= 0) && (i >= nargs))
+			if (invalid && (index <= 0) && (index >= nargs))
+			{
 				break;
+			}
 
 			/* solution read-write lock and print mutex */
 			res = check_solution_thread(pairs, nargs, saved_pairs, saved_ntests, output, solution_mux);
 
-			if(res == End)
+			if (res == End)
 			{
 				*end = true;
 				break;
 			}
 
-			i = next_pair(pairs, nargs, nlines);
-		} while(!(*end) && (i > 0) && (i < nargs));
+			index = next_pair(pairs, nargs, nlines);
+		} while(!(*end) && (index > 0) && (index < nargs));
 	}
 
 	free((uint32_t*)pairs);
@@ -218,29 +220,28 @@ static void *find_solution_thread(void *arg)
 	return 0;
 }
 
-static uint32_t get_start_pairs(uint32_t  *pairs, uint32_t  *start, uint32_t  nargs, uint32_t  nlines, pthread_mutex_t *start_mux)
+static uint32_t get_start_pairs(uint32_t *pairs, uint32_t *start, uint32_t nargs, uint32_t nlines, pthread_mutex_t *start_mux)
 {
-	uint32_t  i;
+	uint32_t index;
 
 	/* lock mutex */
 	pthread_mutex_lock(start_mux);
 
-	copy_array(start, pairs, 2 * nargs);
+	copy_array(start, pairs, (2 * nargs));
 
-	i = next_pair_i(start, nargs, nlines, 0);
+	index = next_pair_i(start, nargs, nlines, 0);
 
 	/* unlock mutex */
 	pthread_mutex_unlock(start_mux);
 
-	return i;
+	return index;
 }
 
 static Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pairs, uint32_t *saved_ntests, uint8_t *output, pthread_mutex_t *solution_mux)
 {
 	Status code = False;
-	uint32_t  min_ntests = nargs + 1;
-
-	uint32_t  ntests = count_unique(pairs, nargs);
+	uint32_t min_ntests = nargs + 1;
+	uint32_t ntests = count_unique(pairs, nargs);
 
 	if (ntests < *saved_ntests)
 	{
@@ -258,9 +259,13 @@ static Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *s
 			fflush(stdout);
 
 			if (ntests > min_ntests)
+			{
 				code = True;
+			}
 			else
+			{
 				code = End;
+			}
 		}
 
 		pthread_mutex_unlock(solution_mux);
@@ -271,15 +276,15 @@ static Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *s
 
 static void copy_array(uint32_t *from, uint32_t *to, uint32_t n)
 {
-	uint32_t  i;
+	uint32_t index;
 
-	for (i = 0; i < n; i++)
+	for (index = 0U; index < n; index++)
 	{
-		to[i] = from[i];
+		to[index] = from[index];
 	}
 }
 
-static bool check_invalid_pairs_thread(uint32_t  *pairs, uint32_t  nargs, uint32_t  nlines, uint8_t  *output, uint32_t  *i)
+static bool check_invalid_pairs_thread(uint32_t *pairs, uint32_t nargs, uint32_t nlines, uint8_t *output, uint32_t *i)
 {
 	uint32_t  j;
 	bool invalid = false;
