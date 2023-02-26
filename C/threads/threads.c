@@ -1,5 +1,15 @@
 #include "threads.h"
 
+static uint32_t determine_required_threads(uint32_t available_threads, uint32_t argument_count);
+static ThreadArg *to_thread_arg(uint32_t nargs, uint32_t nlines, uint8_t *output, uint32_t *start, uint32_t *saved_pairs, uint32_t *saved_ntests, bool *end, pthread_mutex_t *start_mux, pthread_mutex_t *solution_mux);
+static void from_thread_arg(ThreadArg *thread_arg, uint32_t *nargs, uint32_t *nlines, uint8_t **output, uint32_t **start, uint32_t **saved_pairs, uint32_t **saved_ntests, bool **end, pthread_mutex_t **start_mux, pthread_mutex_t **solution_mux);
+static void *find_solution_thread(void *arg);
+static uint32_t get_start_pairs(uint32_t  *pairs, uint32_t  *start, uint32_t  nargs, uint32_t  nlines, pthread_mutex_t *start_mux);
+static Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pairs, uint32_t *saved_ntests, uint8_t *output, pthread_mutex_t *solution_mux);
+static void copy_array(uint32_t *from, uint32_t *to, uint32_t n);
+static bool check_invalid_pairs_thread(uint32_t  *pairs, uint32_t  nargs, uint32_t  nlines, uint8_t  *output, uint32_t  *i);
+
+
 uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, uint8_t *output)
 {
 	pthread_t *threads;
@@ -13,7 +23,7 @@ uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, 
 	pthread_mutex_t start_mux;
 	pthread_mutex_t solution_mux;
 
-	nthreads = check_valid_nthreads(nthreads, nargs);
+	nthreads = determine_required_threads(nthreads, nargs);
 	threads = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
 	pthread_mutex_init(&start_mux, NULL);
@@ -52,7 +62,7 @@ uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, 
 	return 0;
 }
 
-uint32_t check_valid_nthreads(uint32_t available_threads, uint32_t argument_count) 
+static uint32_t determine_required_threads(uint32_t available_threads, uint32_t argument_count) 
 {
 	uint32_t index;
 	int32_t power = (argument_count - 1U);
@@ -92,34 +102,34 @@ uint32_t check_valid_nthreads(uint32_t available_threads, uint32_t argument_coun
 }
 
 // TODO: Understand what this function is doing as the logic is irrational
-int compare_pairs(uint32_t *pairs1, uint32_t *pairs2, uint32_t npairs)
-{
-	uint32_t index;
-	int comparison = 0;	/* pairs1 are smaller than pairs2 */ 
+// int compare_pairs(uint32_t *pairs1, uint32_t *pairs2, uint32_t npairs)
+// {
+// 	uint32_t index;
+// 	int comparison = 0;	/* pairs1 are smaller than pairs2 */ 
 
-	for (index = 0U; index < npairs; index++)
-	{
-		if (pairs1[index] < pairs2[index])
-		{
-			comparison = -1;
-			break;
-		}
-		else if (pairs1[index] == pairs2[index])
-		{
-			continue;
-		}
-		else if (pairs1[index] > pairs2[index])
-		{
-			comparison = 1;
-			break;
-		}
-	}
+// 	for (index = 0U; index < npairs; index++)
+// 	{
+// 		if (pairs1[index] < pairs2[index])
+// 		{
+// 			comparison = -1;
+// 			break;
+// 		}
+// 		else if (pairs1[index] == pairs2[index])
+// 		{
+// 			continue;
+// 		}
+// 		else if (pairs1[index] > pairs2[index])
+// 		{
+// 			comparison = 1;
+// 			break;
+// 		}
+// 	}
 
-	return comparison;
-}
+// 	return comparison;
+// }
 
 // TODO: Determine if this function serves any benefit.
-ThreadArg *to_thread_arg(uint32_t nargs, uint32_t nlines, uint8_t *output, uint32_t *start, uint32_t *saved_pairs, uint32_t *saved_ntests, bool *end, pthread_mutex_t *start_mux, pthread_mutex_t *solution_mux)
+static ThreadArg *to_thread_arg(uint32_t nargs, uint32_t nlines, uint8_t *output, uint32_t *start, uint32_t *saved_pairs, uint32_t *saved_ntests, bool *end, pthread_mutex_t *start_mux, pthread_mutex_t *solution_mux)
 {
 	ThreadArg *thread_arg = (ThreadArg*)malloc(sizeof(ThreadArg));
 
@@ -137,7 +147,7 @@ ThreadArg *to_thread_arg(uint32_t nargs, uint32_t nlines, uint8_t *output, uint3
 }
 
 // TODO: Determine if this function serves any benefit.
-void from_thread_arg(ThreadArg *thread_arg, uint32_t *nargs, uint32_t *nlines, uint8_t **output, uint32_t **start, uint32_t **saved_pairs, uint32_t **saved_ntests, bool **end, pthread_mutex_t **start_mux, pthread_mutex_t **solution_mux)
+static void from_thread_arg(ThreadArg *thread_arg, uint32_t *nargs, uint32_t *nlines, uint8_t **output, uint32_t **start, uint32_t **saved_pairs, uint32_t **saved_ntests, bool **end, pthread_mutex_t **start_mux, pthread_mutex_t **solution_mux)
 {
 	*nargs = thread_arg->nargs;
 	*nlines = thread_arg->nlines;
@@ -154,7 +164,7 @@ void from_thread_arg(ThreadArg *thread_arg, uint32_t *nargs, uint32_t *nlines, u
 	return;
 }
 
-void *find_solution_thread(void *arg)
+static void *find_solution_thread(void *arg)
 {
 	uint32_t  nargs;
 	uint32_t  nlines;
@@ -208,7 +218,7 @@ void *find_solution_thread(void *arg)
 	return 0;
 }
 
-uint32_t get_start_pairs(uint32_t  *pairs, uint32_t  *start, uint32_t  nargs, uint32_t  nlines, pthread_mutex_t *start_mux)
+static uint32_t get_start_pairs(uint32_t  *pairs, uint32_t  *start, uint32_t  nargs, uint32_t  nlines, pthread_mutex_t *start_mux)
 {
 	uint32_t  i;
 
@@ -225,7 +235,7 @@ uint32_t get_start_pairs(uint32_t  *pairs, uint32_t  *start, uint32_t  nargs, ui
 	return i;
 }
 
-Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pairs, uint32_t *saved_ntests, uint8_t *output, pthread_mutex_t *solution_mux)
+static Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pairs, uint32_t *saved_ntests, uint8_t *output, pthread_mutex_t *solution_mux)
 {
 	Status code = False;
 	uint32_t  min_ntests = nargs + 1;
@@ -259,7 +269,7 @@ Status check_solution_thread(uint32_t *pairs, uint32_t nargs, uint32_t *saved_pa
 	return code;
 }
 
-void copy_array(uint32_t *from, uint32_t *to, uint32_t n)
+static void copy_array(uint32_t *from, uint32_t *to, uint32_t n)
 {
 	uint32_t  i;
 
@@ -269,7 +279,7 @@ void copy_array(uint32_t *from, uint32_t *to, uint32_t n)
 	}
 }
 
-bool check_invalid_pairs_thread(uint32_t  *pairs, uint32_t  nargs, uint32_t  nlines, uint8_t  *output, uint32_t  *i)
+static bool check_invalid_pairs_thread(uint32_t  *pairs, uint32_t  nargs, uint32_t  nlines, uint8_t  *output, uint32_t  *i)
 {
 	uint32_t  j;
 	bool invalid = false;
