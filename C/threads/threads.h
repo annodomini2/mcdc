@@ -19,7 +19,7 @@ typedef struct
 	pthread_mutex_t *solution_mux;
 } ThreadArg;
 
-uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, uint8_t *output); // PUBLIC
+uint32_t solve_with_threads(uint32_t nthreads, uint32_t nargs, uint32_t nlines, uint8_t *output);
 
 //int compare_pairs(uint32_t *pairs1, uint32_t *pairs2, uint32_t npairs);
 
