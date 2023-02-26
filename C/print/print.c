@@ -1,6 +1,8 @@
 #include "print.h"
 
-void print_dash_line(uint32_t nargs)
+static void print_dash_line(uint32_t nargs);
+
+static void print_dash_line(uint32_t nargs)
 {
 	uint32_t index = 0;
 
